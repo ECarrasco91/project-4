@@ -33,11 +33,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class DailyActivity extends AppCompatActivity {
-    public static final int DIALOG_ID = 0;
-    int mHour, mMinute;
-
-    TimePicker mTimePicker;
-    TimePickerDialog.OnTimeSetListener mListener;
     TextView mCurrentDate;
     FloatingActionButton mFAB;
     RecyclerView mGoalsRecyclerView, mAffirmationsRecyclerView, mScheduleRecyclerView;
@@ -91,14 +86,6 @@ public class DailyActivity extends AppCompatActivity {
         mScheduleRecyclerView.setLayoutManager(ScheduleLinearLayoutManager);
         mScheduleRecyclerView.setAdapter(mScheduleAdapter);
 
-//        mTimePicker = new TimePicker(getApplicationContext());
-//        mListener = new TimePickerDialog.OnTimeSetListener() {
-//            @Override
-//            public void onTimeSet(TimePicker timePicker, int i, int i1) {
-//                mTimePicker = timePicker;
-//            }
-//        };
-
         mFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -120,7 +107,6 @@ public class DailyActivity extends AppCompatActivity {
                                     case 2: // Schedule
                                         alertDialog(R.layout.dialog_add_schedule, R.id.schedule_edit_text);
                                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-//                                            showDialog(DIALOG_ID);
                                             showTimePickerDialog();
                                         }
                                         break;
@@ -134,14 +120,6 @@ public class DailyActivity extends AppCompatActivity {
             }
         });
     }
-
-//    @Override
-//    protected Dialog onCreateDialog(int id) {
-//        if (id == DIALOG_ID) {
-//            return new TimePickerDialog(DailyActivity.this, mListener, mHour, mMinute, false);
-//        }
-//        return null;
-//    }
 
     public void alertDialog(int layout, final int id){
         AlertDialog.Builder builder = new AlertDialog.Builder(DailyActivity.this);
@@ -181,8 +159,7 @@ public class DailyActivity extends AppCompatActivity {
                         break;
 
                     case R.id.schedule_edit_text:
-//                        String time = getTimeFromTimePicker(mTimePicker);
-                        String time = TimePickerFragment.getTimeString();
+                        String time = TimePickerFragment.getTime();
                         Schedule schedule = new Schedule(currentDate, time + input);
 
                         databaseHelper.insertSchedule(schedule);
@@ -197,21 +174,6 @@ public class DailyActivity extends AppCompatActivity {
         })
                 .setNegativeButton("Cancel", null);
         builder.create().show();
-    }
-
-    public String getTimeFromTimePicker(TimePicker timePicker){
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            Calendar time = Calendar.getInstance();
-            time.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
-            time.set(Calendar.MINUTE, timePicker.getMinute());
-
-            String format = "hh:mm a";
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format, Locale.US);
-            String formatted_time = simpleDateFormat.format(time.getTime());
-
-            return formatted_time + " ";
-        }
-        return "";
     }
 
     public void showTimePickerDialog(){
@@ -250,7 +212,7 @@ public class DailyActivity extends AppCompatActivity {
             return "";
         }
 
-        public static String getTimeString(){
+        public static String getTime(){
             return getTimeFromTimePicker(mTimePicker);
         }
     }
