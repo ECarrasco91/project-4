@@ -3,7 +3,9 @@ package com.ezequielc.successplanner.activities;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -89,13 +91,13 @@ public class DailyActivity extends AppCompatActivity {
         mScheduleRecyclerView.setLayoutManager(ScheduleLinearLayoutManager);
         mScheduleRecyclerView.setAdapter(mScheduleAdapter);
 
-        mTimePicker = new TimePicker(getApplicationContext());
-        mListener = new TimePickerDialog.OnTimeSetListener() {
-            @Override
-            public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                mTimePicker = timePicker;
-            }
-        };
+//        mTimePicker = new TimePicker(getApplicationContext());
+//        mListener = new TimePickerDialog.OnTimeSetListener() {
+//            @Override
+//            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+//                mTimePicker = timePicker;
+//            }
+//        };
 
         mFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,7 +120,8 @@ public class DailyActivity extends AppCompatActivity {
                                     case 2: // Schedule
                                         alertDialog(R.layout.dialog_add_schedule, R.id.schedule_edit_text);
                                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                                            showDialog(DIALOG_ID);
+//                                            showDialog(DIALOG_ID);
+                                            showTimePickerDialog();
                                         }
                                         break;
 
@@ -132,13 +135,13 @@ public class DailyActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        if (id == DIALOG_ID) {
-            return new TimePickerDialog(DailyActivity.this, mListener, mHour, mMinute, false);
-        }
-        return null;
-    }
+//    @Override
+//    protected Dialog onCreateDialog(int id) {
+//        if (id == DIALOG_ID) {
+//            return new TimePickerDialog(DailyActivity.this, mListener, mHour, mMinute, false);
+//        }
+//        return null;
+//    }
 
     public void alertDialog(int layout, final int id){
         AlertDialog.Builder builder = new AlertDialog.Builder(DailyActivity.this);
@@ -178,7 +181,8 @@ public class DailyActivity extends AppCompatActivity {
                         break;
 
                     case R.id.schedule_edit_text:
-                        String time = getTimeFromTimePicker(mTimePicker);
+//                        String time = getTimeFromTimePicker(mTimePicker);
+                        String time = TimePickerFragment.getTimeString();
                         Schedule schedule = new Schedule(currentDate, time + input);
 
                         databaseHelper.insertSchedule(schedule);
@@ -208,5 +212,46 @@ public class DailyActivity extends AppCompatActivity {
             return formatted_time + " ";
         }
         return "";
+    }
+
+    public void showTimePickerDialog(){
+        TimePickerFragment fragment = new TimePickerFragment();
+        fragment.show(getSupportFragmentManager(), "timePicker");
+    }
+
+    public static class TimePickerFragment extends DialogFragment
+            implements TimePickerDialog.OnTimeSetListener {
+        int mHour, mMinute;
+        static TimePicker mTimePicker;
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            return new TimePickerDialog(getContext(), this, mHour, mMinute, false);
+        }
+
+        @Override
+        public void onTimeSet(TimePicker timePicker, int i, int i1) {
+            mTimePicker = timePicker;
+        }
+
+        public static String getTimeFromTimePicker(TimePicker timePicker){
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                Calendar time = Calendar.getInstance();
+                time.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
+                time.set(Calendar.MINUTE, timePicker.getMinute());
+
+                String format = "hh:mm a";
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format, Locale.US);
+                String formatted_time = simpleDateFormat.format(time.getTime());
+
+                return formatted_time + " ";
+            }
+            return "";
+        }
+
+        public static String getTimeString(){
+            return getTimeFromTimePicker(mTimePicker);
+        }
     }
 }
