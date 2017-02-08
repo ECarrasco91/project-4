@@ -1,15 +1,17 @@
 package com.ezequielc.successplanner.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -32,16 +34,16 @@ import android.widget.Toast;
 import com.ezequielc.successplanner.R;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
-public class VisionBoardActivity extends AppCompatActivity {
+public class VisionBoardActivity extends AppCompatActivity implements View.OnTouchListener {
     public static final int IMAGE_REQUEST = 1;
 
-    View.OnTouchListener mTouchListener;
     ImageView mNewImage;
     TextView mNewText;
     ViewGroup mViewGroup;
+
     int mStartX, mStartY;
     boolean mEditingOrDeleting;
 
@@ -60,43 +62,41 @@ public class VisionBoardActivity extends AppCompatActivity {
         }
 
         mViewGroup = (ViewGroup) findViewById(R.id.activity_vision_board);
+    }
 
-        mTouchListener = new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                // View holds position while being chosen to be delete or edited
-                if (mEditingOrDeleting) {
-                    return false;
-                }
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        // View holds position while being chosen to be delete or edited
+        if (mEditingOrDeleting) {
+            return false;
+        }
 
-                RelativeLayout.LayoutParams getLayoutParams =
-                        (RelativeLayout.LayoutParams) view.getLayoutParams();
+        RelativeLayout.LayoutParams getLayoutParams =
+                (RelativeLayout.LayoutParams) view.getLayoutParams();
 
-                switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_DOWN:
-                    case MotionEvent.ACTION_POINTER_DOWN:
-                        mStartX = (int) motionEvent.getX();
-                        mStartY = (int) motionEvent.getY();
-                        break;
+        switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN:
+                mStartX = (int) motionEvent.getX();
+                mStartY = (int) motionEvent.getY();
+                break;
 
-                    case MotionEvent.ACTION_MOVE:
-                        int delta_x = (int) motionEvent.getX() - mStartX;
-                        int delta_y = (int) motionEvent.getY() - mStartY;
-                        getLayoutParams.leftMargin = getLayoutParams.leftMargin + delta_x;
-                        getLayoutParams.rightMargin = getLayoutParams.rightMargin - delta_x;
-                        getLayoutParams.topMargin = getLayoutParams.topMargin + delta_y;
-                        getLayoutParams.bottomMargin = getLayoutParams.bottomMargin - delta_y;
-                        view.setLayoutParams(getLayoutParams);
-                        break;
+            case MotionEvent.ACTION_MOVE:
+                int delta_x = (int) motionEvent.getX() - mStartX;
+                int delta_y = (int) motionEvent.getY() - mStartY;
+                getLayoutParams.leftMargin = getLayoutParams.leftMargin + delta_x;
+                getLayoutParams.rightMargin = getLayoutParams.rightMargin - delta_x;
+                getLayoutParams.topMargin = getLayoutParams.topMargin + delta_y;
+                getLayoutParams.bottomMargin = getLayoutParams.bottomMargin - delta_y;
+                view.setLayoutParams(getLayoutParams);
+                break;
 
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_POINTER_UP:
-                        break;
-                }
-                mViewGroup.invalidate();
-                return true;
-            }
-        };
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+                break;
+        }
+        mViewGroup.invalidate();
+        return true;
     }
 
     @Override
@@ -247,7 +247,8 @@ public class VisionBoardActivity extends AppCompatActivity {
                 .setCancelable(false);
         builder.create().show();
 
-        mNewText.setOnTouchListener(mTouchListener);
+        mNewText.setTextSize(24);
+        mNewText.setOnTouchListener(this);
     }
 
     // Allow TextView to be edited
@@ -258,7 +259,7 @@ public class VisionBoardActivity extends AppCompatActivity {
         }
 
         mEditingOrDeleting = true;
-        Toast.makeText(this, "Choose Text to Edit...", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Choose Text to Edit...", Toast.LENGTH_SHORT).show();
 
         for (int i = 0; i < mViewGroup.getChildCount(); i++) {
             final View child = mViewGroup.getChildAt(i);
@@ -305,7 +306,7 @@ public class VisionBoardActivity extends AppCompatActivity {
         }
 
         mEditingOrDeleting = true;
-        Toast.makeText(this, "Choose Text to Change Color...", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Choose Text to Change Color...", Toast.LENGTH_SHORT).show();
 
         for (int i = 0; i < mViewGroup.getChildCount(); i++) {
             final View child = mViewGroup.getChildAt(i);
@@ -412,7 +413,7 @@ public class VisionBoardActivity extends AppCompatActivity {
         }
 
         mEditingOrDeleting = true;
-        Toast.makeText(this, "Choose Text to Change Size...", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Choose Text to Change Size...", Toast.LENGTH_SHORT).show();
 
         for (int i = 0; i < mViewGroup.getChildCount(); i++) {
             final View child = mViewGroup.getChildAt(i);
@@ -469,8 +470,8 @@ public class VisionBoardActivity extends AppCompatActivity {
         mNewImage.setLayoutParams(wrapContent);
         mViewGroup.addView(mNewImage);
         mNewImage.setImageBitmap(bitmap);
-
-        mNewImage.setOnTouchListener(mTouchListener);
+        mNewImage.setAdjustViewBounds(true);
+        mNewImage.setOnTouchListener(this);
     }
 
     // AlertDialog listing delete options
@@ -518,7 +519,7 @@ public class VisionBoardActivity extends AppCompatActivity {
     // Specific view from ViewGroup to be removed
     public void deleteView(){
         mEditingOrDeleting = true;
-        Toast.makeText(this, "Choose Item to Delete...", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Choose Item to Delete...", Toast.LENGTH_SHORT).show();
 
         for (int i = 0; i < mViewGroup.getChildCount(); i++) {
             final View child = mViewGroup.getChildAt(i);
@@ -589,14 +590,10 @@ public class VisionBoardActivity extends AppCompatActivity {
 
         if (requestCode == IMAGE_REQUEST && null != data) {
             Uri image = data.getData();
-            Bitmap bitmap;
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), image);
-                addNewImage(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            catch (OutOfMemoryError e) {
+                Bitmap resizeBitmap = resizedBitmap(getApplicationContext(), image, 2);
+                addNewImage(resizeBitmap);
+            } catch (OutOfMemoryError e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Images too large. Use smaller Images. Restarting...",
                         Toast.LENGTH_LONG).show();
@@ -611,5 +608,20 @@ public class VisionBoardActivity extends AppCompatActivity {
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent.createChooser(intent, "Select Image"), IMAGE_REQUEST);
+    }
+
+    private Bitmap resizedBitmap(Context context, Uri uri, int sampleSize){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = sampleSize;
+
+        AssetFileDescriptor fileDescriptor = null;
+        try {
+            fileDescriptor = context.getContentResolver().openAssetFileDescriptor(uri, "r");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return BitmapFactory.decodeFileDescriptor(
+                fileDescriptor.getFileDescriptor(), null, options);
     }
 }
