@@ -1,8 +1,8 @@
 package com.ezequielc.successplanner.recyclerviews;
 
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.RecyclerView;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +18,7 @@ import com.ezequielc.successplanner.models.Affirmation;
 import java.util.List;
 
 /**
- * Created by student on 12/20/16.
+ * Created by Ezequiel on 12/20/16.
  */
 
 public class AffirmationRecyclerViewAdapter extends RecyclerView.Adapter<AffirmationRecyclerViewAdapter.AffirmationViewHolder> {
@@ -55,7 +55,7 @@ public class AffirmationRecyclerViewAdapter extends RecyclerView.Adapter<Affirma
                                         editOptionBuilder.setView(dialogView);
 
                                         // Grabs the text in the adapter position and set it to the edit text
-                                        final EditText editText = (EditText) dialogView.findViewById(R.id.affirmations_edit_text);
+                                        final EditText editText = dialogView.findViewById(R.id.affirmations_edit_text);
                                         editText.setText(mAffirmationList.get(holder.getAdapterPosition()).getAffirmation());
 
                                         editOptionBuilder.setPositiveButton("EDIT", new DialogInterface.OnClickListener() {
@@ -74,8 +74,7 @@ public class AffirmationRecyclerViewAdapter extends RecyclerView.Adapter<Affirma
                                                 notifyItemChanged(holder.getAdapterPosition());
                                             }
                                         })
-                                                .setNegativeButton("Cancel", null)
-                                                .setCancelable(false);
+                                                .setNegativeButton("Cancel", null);
                                         editOptionBuilder.create().show();
                                         break;
 
@@ -92,13 +91,12 @@ public class AffirmationRecyclerViewAdapter extends RecyclerView.Adapter<Affirma
                                                         notifyItemRemoved(holder.getAdapterPosition());
                                                     }
                                                 })
-                                                .setNegativeButton("No", null)
-                                                .setCancelable(false);
+                                                .setNegativeButton("No", null);
                                         deleteOptionBuilder.create().show();
                                         break;
                                 }
                             }
-                        }).setCancelable(false);
+                        });
                 builder.create().show();
                 return false;
             }
@@ -117,8 +115,8 @@ public class AffirmationRecyclerViewAdapter extends RecyclerView.Adapter<Affirma
         public AffirmationViewHolder(View itemView) {
             super(itemView);
 
-            mAffirmationTextView = (TextView) itemView.findViewById(R.id.affirmation_item);
-            mAffirmationItemLayout = (LinearLayout) itemView.findViewById(R.id.affirmation_list_linear_layout);
+            mAffirmationTextView = itemView.findViewById(R.id.affirmation_item);
+            mAffirmationItemLayout = itemView.findViewById(R.id.affirmation_list_linear_layout);
         }
     }
 }

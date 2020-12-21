@@ -11,12 +11,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,13 +39,15 @@ import java.io.FileOutputStream;
 
 public class VisionBoardActivity extends AppCompatActivity implements View.OnTouchListener {
     public static final int IMAGE_REQUEST = 1;
+    private static final String TAG = "VisionBoardActivity";
 
-    ImageView mNewImage;
-    TextView mNewText;
+    ImageView mNewImageView;
+    TextView mNewTextView;
     ViewGroup mViewGroup;
 
     int mStartX, mStartY;
     boolean mEditingOrDeleting;
+    boolean mImageFileExist;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +63,7 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, IMAGE_REQUEST);
         }
 
-        mViewGroup = (ViewGroup) findViewById(R.id.activity_vision_board);
+        mViewGroup = findViewById(R.id.activity_vision_board);
     }
 
     @Override
@@ -116,7 +118,7 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                 .create().show();
     }
 
-    public void takeScreenshot(){
+    public void screenshotPrompt(){
         // If Write External Storage is not granted, cancels the process
         if (ContextCompat.checkSelfPermission(getApplicationContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -130,47 +132,7 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        try {
-                            // Path to the screenshot folder
-                            String path = "/Pictures/Screenshots/VisionBoard.jpg";
-                            String pathName = Environment.getExternalStorageDirectory().toString() + path;
-
-                            View screenshot = getWindow().getDecorView().getRootView();
-                            screenshot.setDrawingCacheEnabled(true);
-                            Bitmap bitmap = Bitmap.createBitmap(screenshot.getDrawingCache());
-                            screenshot.setDrawingCacheEnabled(false);
-
-                            final File imageFile = new File(pathName);
-
-                            FileOutputStream outputStream = new FileOutputStream(imageFile);
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-                            outputStream.flush();
-                            outputStream.close();
-
-                            // Updates the gallery to see new files instantly
-                            MediaScannerConnection.scanFile(getApplicationContext(),
-                                    new String[]{imageFile.toString()}, null,
-                                    new MediaScannerConnection.OnScanCompletedListener() {
-                                        public void onScanCompleted(String path, Uri uri) {
-
-                                        }
-                                    });
-
-                            // AlertDialog asking if User wants to open the vision board
-                            new AlertDialog.Builder(VisionBoardActivity.this)
-                                    .setMessage("Do you want to open Vision Board?")
-                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            openScreenShoot(imageFile);
-                                        }
-                                    })
-                                    .setNegativeButton("No", null)
-                                    .setCancelable(false)
-                                    .create().show();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        captureScreenshot();
                     }
                 })
                 .setNegativeButton("No", null)
@@ -178,13 +140,50 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                 .create().show();
     }
 
-    // Intent to open screenshot
-    public void openScreenShoot(File file){
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        Uri uri = Uri.fromFile(file);
-        intent.setDataAndType(uri, "image/*");
-        startActivity(intent);
+    public void captureScreenshot(){
+        // Path
+        String app_path = getFilesDir().toString();
+        String vision_board = app_path+"/VisionBoard.jpg";
+
+        Log.d(TAG, "captureScreenshot: vision_board: "+vision_board);
+        try {
+            View screenshot = getWindow().getDecorView().getRootView();
+            screenshot.setDrawingCacheEnabled(true);
+            Bitmap bitmap = Bitmap.createBitmap(screenshot.getDrawingCache());
+            screenshot.setDrawingCacheEnabled(false);
+
+            mImageFileExist = false;
+            final File imageFile = new File(vision_board);
+
+            Log.d(TAG, "captureScreenshot: imageFile: "+imageFile);
+
+            if (imageFile.exists()) {
+                Toast.makeText(this, "Vision Board already saved in "+vision_board+
+                        ". This is the current Vision Board now!", Toast.LENGTH_LONG).show();
+                mImageFileExist = true;
+            }
+
+            FileOutputStream outputStream = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.flush();
+            outputStream.close();
+
+            // Updates the gallery to see new files instantly
+            MediaScannerConnection.scanFile(getApplicationContext(),
+                    new String[]{imageFile.toString()}, null,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        public void onScanCompleted(String path, Uri uri) {
+
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (!mImageFileExist) {
+            Toast.makeText(VisionBoardActivity.this,
+                    "Vision Board has been saved in "+vision_board+"!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     // AlertDialog listing text options
@@ -221,15 +220,15 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                 new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        mNewText = new TextView(getApplication());
-        mNewText.setLayoutParams(wrapContent);
+        mNewTextView = new TextView(getApplication());
+        mNewTextView.setLayoutParams(wrapContent);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(VisionBoardActivity.this);
         LayoutInflater inflater = LayoutInflater.from(VisionBoardActivity.this);
         View view = inflater.inflate(R.layout.dialog_add_text, null);
         builder.setView(view);
 
-        final EditText editText = (EditText) view.findViewById(R.id.new_text_edit_text);
+        final EditText editText = view.findViewById(R.id.new_text_edit_text);
 
         builder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
                     @Override
@@ -239,16 +238,16 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                             return;
                         }
                         String input = editText.getText().toString();
-                        mNewText.setText(input);
-                        mViewGroup.addView(mNewText);
+                        mNewTextView.setText(input);
+                        mViewGroup.addView(mNewTextView);
                     }
                 })
                 .setNegativeButton("Cancel", null)
                 .setCancelable(false);
         builder.create().show();
 
-        mNewText.setTextSize(24);
-        mNewText.setOnTouchListener(this);
+        mNewTextView.setTextSize(24);
+        mNewTextView.setOnTouchListener(this);
     }
 
     // Allow TextView to be edited
@@ -279,7 +278,7 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                     builder.setView(dialogView);
 
                     // Grabs the text in the adapter position and set it to the edit text
-                    final EditText editText = (EditText) dialogView.findViewById(R.id.new_text_edit_text);
+                    final EditText editText = dialogView.findViewById(R.id.new_text_edit_text);
                     editText.setText(((TextView) child).getText().toString());
 
                     builder.setPositiveButton("EDIT", new DialogInterface.OnClickListener() {
@@ -440,7 +439,7 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
         View view = inflater.inflate(R.layout.dialog_number_picker, null);
         builder.setView(view);
 
-        final NumberPicker numberPicker = (NumberPicker) view.findViewById(R.id.number_picker);
+        final NumberPicker numberPicker = view.findViewById(R.id.number_picker);
 
         numberPicker.setMaxValue(100);
         numberPicker.setMinValue(10);
@@ -466,12 +465,12 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                 new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        mNewImage = new ImageView(getApplicationContext());
-        mNewImage.setLayoutParams(wrapContent);
-        mViewGroup.addView(mNewImage);
-        mNewImage.setImageBitmap(bitmap);
-        mNewImage.setAdjustViewBounds(true);
-        mNewImage.setOnTouchListener(this);
+        mNewImageView = new ImageView(getApplicationContext());
+        mNewImageView.setLayoutParams(wrapContent);
+        mViewGroup.addView(mNewImageView);
+        mNewImageView.setImageBitmap(bitmap);
+        mNewImageView.setAdjustViewBounds(true);
+        mNewImageView.setOnTouchListener(this);
     }
 
     // AlertDialog listing delete options
@@ -572,7 +571,7 @@ public class VisionBoardActivity extends AppCompatActivity implements View.OnTou
                 return true;
 
             case R.id.action_save:
-                takeScreenshot();
+                screenshotPrompt();
                 return true;
 
             case R.id.action_change_background:

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by student on 12/21/16.
+ * Created by Ezequiel on 12/21/16.
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -118,7 +118,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String[] columns = new String[]{COL_ID, COL_DATE, COL_GOALS};
         String selection = COL_DATE + " = ?";
-        String[] selectionArgs = new String[]{String.valueOf(currentDate)};
+        String[] selectionArgs = new String[]{currentDate};
 
         Cursor cursor = db.query(GOALS_TABLE, columns, selection, selectionArgs, null, null, null, null);
 
@@ -145,7 +145,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String[] columns = new String[]{COL_ID, COL_DATE, COL_AFFIRMATIONS};
         String selection = COL_DATE + " = ?";
-        String[] selectionArgs = new String[]{String.valueOf(currentDate)};
+        String[] selectionArgs = new String[]{currentDate};
 
         Cursor cursor = db.query(AFFIRMATIONS_TABLE, columns, selection, selectionArgs, null, null, null, null);
 
@@ -172,7 +172,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String[] columns = new String[]{COL_ID, COL_DATE, COL_SCHEDULE};
         String selection = COL_DATE + " = ?";
-        String[] selectionArgs = new String[]{String.valueOf(currentDate)};
+        String[] selectionArgs = new String[]{currentDate};
 
         Cursor cursor = db.query(SCHEDULE_TABLE, columns, selection, selectionArgs, null, null, null, null);
 
