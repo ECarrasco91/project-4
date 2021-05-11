@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.ezequielc.successplanner.DatabaseHelper;
+import com.ezequielc.successplanner.utils.DatabaseHelper;
 import com.ezequielc.successplanner.R;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
@@ -41,8 +41,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View view) {
-        // Receive Quote Switch
         switch (view.getId()) {
+            // Receive Quote Switch
             case R.id.get_quote:
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
                 editor.putBoolean(PREF_RECEIVE_QUOTE_SWITCH, mReceiveQuotesSwitch.isChecked());
@@ -53,12 +53,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
             case R.id.delete_all_entries:
                 new AlertDialog.Builder(SettingsActivity.this)
                         .setMessage("Delete All Entries?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                DatabaseHelper databaseHelper = DatabaseHelper.getInstance(getApplicationContext());
-                                databaseHelper.deleteAll();
-                            }
+                        .setPositiveButton("Yes", (dialogInterface, i) -> {
+                            DatabaseHelper databaseHelper = DatabaseHelper.getInstance(getApplicationContext());
+                            databaseHelper.deleteAll();
                         })
                         .setNegativeButton("No", null)
                         .setCancelable(false)

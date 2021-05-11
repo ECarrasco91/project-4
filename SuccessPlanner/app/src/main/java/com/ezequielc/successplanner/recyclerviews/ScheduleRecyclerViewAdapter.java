@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ezequielc.successplanner.DatabaseHelper;
+import com.ezequielc.successplanner.utils.DatabaseHelper;
 import com.ezequielc.successplanner.R;
 import com.ezequielc.successplanner.models.Schedule;
 

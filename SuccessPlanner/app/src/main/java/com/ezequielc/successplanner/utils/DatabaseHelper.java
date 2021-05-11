@@ -1,4 +1,4 @@
-package com.ezequielc.successplanner;
+package com.ezequielc.successplanner.utils;
 
 import android.content.ContentValues;
 import android.content.Context;

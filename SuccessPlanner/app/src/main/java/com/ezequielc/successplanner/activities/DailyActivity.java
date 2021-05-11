@@ -17,7 +17,7 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.ezequielc.successplanner.DatabaseHelper;
+import com.ezequielc.successplanner.utils.DatabaseHelper;
 import com.ezequielc.successplanner.models.Goal;
 import com.ezequielc.successplanner.recyclerviews.GoalRecyclerViewAdapter;
 import com.ezequielc.successplanner.R;
@@ -90,39 +90,33 @@ public class DailyActivity extends AppCompatActivity {
         mScheduleRecyclerView.setLayoutManager(ScheduleLinearLayoutManager);
         mScheduleRecyclerView.setAdapter(mScheduleAdapter);
 
-        mFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Presents an AlertDialog listing entries to add
-                CharSequence[] options = {"Goal", "Affirmation", "Schedule"};
-                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext())
-                        .setTitle("Choose:")
-                        .setItems(options, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                switch (i) {
-                                    case 0: // Goals
-                                        alertDialog(R.layout.dialog_add_goals, R.id.goal_edit_text);
-                                        break;
+        mFAB.setOnClickListener(view -> {
+            // Presents an AlertDialog listing entries to add
+            CharSequence[] options = {"Goal", "Affirmation", "Schedule"};
+            AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext())
+                    .setTitle("Choose:")
+                    .setItems(options, (dialogInterface, i) -> {
+                        switch (i) {
+                            case 0: // Goals
+                                alertDialog(R.layout.dialog_add_goals, R.id.goal_edit_text);
+                                break;
 
-                                    case 1: // Affirmations
-                                        alertDialog(R.layout.dialog_add_affirmations, R.id.affirmations_edit_text);
-                                        break;
+                            case 1: // Affirmations
+                                alertDialog(R.layout.dialog_add_affirmations, R.id.affirmations_edit_text);
+                                break;
 
-                                    case 2: // Schedule
-                                        alertDialog(R.layout.dialog_add_schedule, R.id.schedule_edit_text);
-                                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                                            showTimePickerDialog();
-                                        }
-                                        break;
-
-                                    default:
-                                        break;
+                            case 2: // Schedule
+                                alertDialog(R.layout.dialog_add_schedule, R.id.schedule_edit_text);
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                                    showTimePickerDialog();
                                 }
-                            }
-                        });
-                builder.create().show();
-            }
+                                break;
+
+                            default:
+                                break;
+                        }
+                    });
+            builder.create().show();
         });
     }
 

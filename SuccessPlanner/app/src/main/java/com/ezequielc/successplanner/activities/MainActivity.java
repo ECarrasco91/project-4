@@ -71,12 +71,8 @@ public class MainActivity extends AppCompatActivity {
             mGotQuote = false;
         }
 
-        mCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(CalendarView calendarView, int year, int month, int dayOfMonth) {
-                intentData(year, month, dayOfMonth);
-            }
-        });
+        mCalendarView.setOnDateChangeListener((calendarView, year, month, dayOfMonth) ->
+                intentData(year, month, dayOfMonth));
     }
 
     // Passes intent data to DailyActivity
@@ -149,10 +145,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isConnected(){
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            return true;
-        }
-        return false;
+        return networkInfo != null && networkInfo.isConnected();
     }
 
     // Get quote from RapidAPI

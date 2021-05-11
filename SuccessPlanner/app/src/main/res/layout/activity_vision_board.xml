@@ -7,4 +7,10 @@
     android:background="@android:color/holo_orange_light"
     tools:context="com.ezequielc.successplanner.activities.VisionBoardActivity">
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/saved_vision_board"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"/>
+
 </RelativeLayout>
